@@ -52,6 +52,8 @@ Open your web browser and navigate to:
 👉 **[http://127.0.0.1:8000](http://127.0.0.1:8000)**
 
 ---
+<img width="1528" height="731" alt="image" src="https://github.com/user-attachments/assets/5ec94d96-a405-431e-a235-071b76dfbcc8" />
+
 
 ## 📂 Project Structure
 
