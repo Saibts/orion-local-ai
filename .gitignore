@@ -1,0 +1,10 @@
+# Large binaries
+OllamaSetup.exe
+.ollama/
+
+# Python caching & environments
+__pycache__/
+*.pyc
+.venv/
+env/
+venv/

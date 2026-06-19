@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orion - Local AI Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-container">
+        <!-- Header -->
+        <header>
+            <div class="brand">
+                <span class="pulse-dot active" id="ws-status-dot"></span>
+                <h1>ORION</h1>
+                <span class="subtitle">// LOCAL.INTELLIGENCE</span>
+            </div>
+            <div class="connection-status" id="ws-status-text">OFFLINE</div>
+        </header>
+
+        <!-- Main Body -->
+        <main>
+            <!-- Sidebar: System Metrics -->
+            <section class="metrics-panel">
+                <h2>SYSTEM METRICS</h2>
+                <div class="metric-card">
+                    <div class="metric-info">
+                        <span>CPU USAGE</span>
+                        <span id="cpu-val">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="cpu-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-info">
+                        <span>RAM USAGE</span>
+                        <span id="ram-val">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="ram-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-info">
+                        <span>DISK USAGE</span>
+                        <span id="disk-val">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="disk-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Log Panel -->
+                <div class="sys-logs">
+                    <h3>SYSTEM LOGS</h3>
+                    <div class="logs-container" id="sys-logs-container">
+                        <div class="log-entry system">[SYSTEM INITIALIZED]</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Center Chat & Visualizer -->
+            <section class="interaction-panel">
+                <!-- Visualizer -->
+                <div class="visualizer-wrapper">
+                    <div class="orb standby" id="ai-orb">
+                        <div class="orb-inner"></div>
+                    </div>
+                    <div class="orb-status" id="ai-state-label">STANDBY</div>
+                </div>
+
+                <!-- Chat Logs -->
+                <div class="comms-log" id="comms-log">
+                    <div class="message system">
+                        <span class="sender">ORION</span>
+                        <p class="text">System loaded. Ready for instruction.</p>
+                    </div>
+                </div>
+
+                <!-- Input controls -->
+                <div class="control-area">
+                    <button class="voice-btn" id="mic-btn" title="Toggle Voice Input">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M12,2A3,3 0 0,1 15,5V11A3,3 0 0,1 12,14A3,3 0 0,1 9,11V5A3,3 0 0,1 12,2M19,11C19,14.53 16.39,17.44 13,17.93V21H11V17.93C7.61,17.44 5,14.53 5,11H7A5,5 0 0,0 12,16A5,5 0 0,0 17,11H19Z"/>
+                        </svg>
+                    </button>
+                    <input type="text" id="user-input" placeholder="Initiate text input sequence..." autocomplete="off">
+                    <button class="send-btn" id="send-btn">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
