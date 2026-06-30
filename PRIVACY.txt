@@ -1,0 +1,48 @@
+Orion Local AI - Privacy, Safety & Security Specifications
+==========================================================
+
+Orion is built to be a 100% private, local-first artificial intelligence assistant. 
+This document details the system design, network topography, and data handling protocols 
+to verify the security of the application.
+
+1. System Architecture & Network Topography
+-------------------------------------------
+Orion runs entirely on your local machine. No data leaves your local system.
+
+   [ Browser UI ] (http://127.0.0.1:8000)
+         │
+         ▼ (Local WebSocket Connection: /ws)
+   [ FastAPI Backend ] (main.py)
+         │
+         ▼ (Local Loopback HTTP Client: port 11434)
+   [ Ollama Inference Engine ] (Llama 3.2 3B Model)
+
+* Browser to Backend: The frontend user interface connects exclusively to the local 
+  web server via your loopback interface (IP address: 127.0.0.1 / localhost).
+* Backend to LLM: The FastAPI server forwards user prompts and system states to 
+  the local Ollama instance running on port 11434.
+* Outbound Isolation: All HTTP/WebSocket client interfaces point strictly to local 
+  loopback addresses. No external API endpoints or third-party gateways are declared 
+  or contacted.
+
+2. Data Handling & Storage Policy
+---------------------------------
+* Memory-Only Chat Logs: Conversation history is maintained dynamically as a local 
+  variable inside the active WebSocket session memory.
+* No Persistent Storage: The application does not connect to any database and 
+  does not write logs of your conversations to the filesystem.
+* Lifetime of Session Data: Once you close or reload the browser tab, the 
+  WebSocket connection disconnects, and the associated session history is 
+  immediately purged from memory.
+
+3. Inspecting the Codebase
+---------------------------
+The entire application is completely transparent. You can inspect every component:
+* main.py: Verifies the loopback port binding (127.0.0.1:11434) and session array.
+* app.js: Verifies the local connection endpoints.
+* style.css & index.html: Verifies all UI assets are loaded locally without external tracking scripts.
+
+Conclusion
+----------
+Orion is designed with zero-cloud dependencies. You maintain complete ownership of 
+your hardware, the AI model, and all conversational data.
