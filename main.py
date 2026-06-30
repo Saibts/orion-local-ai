@@ -19,8 +19,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Ollama local endpoint configuration
-OLLAMA_BASE_URL = "http://localhost:11434/v1"
+# Ollama local endpoint configuration (using 127.0.0.1 to avoid Windows IPv6 localhost lookup latency)
+OLLAMA_BASE_URL = "http://127.0.0.1:11434/v1"
 MODEL_NAME = "llama3.2"
 
 # Initialize Async OpenAI client pointing to Ollama
@@ -153,13 +153,23 @@ async def websocket_endpoint(websocket: WebSocket):
                 await websocket.send_json({"type": "state", "state": "THINKING"})
                 
                 try:
+                    # Avoid tool-calling confusion and latency on normal conversational queries
+                    user_msg_lower = user_msg.lower()
+                    use_tools = any(kw in user_msg_lower for kw in [
+                        "status", "metric", "cpu", "ram", "disk", "memory", 
+                        "file", "list", "dir", "read", "workspace", "folder", "diagnostics"
+                    ])
+                    
+                    kwargs = {
+                        "model": MODEL_NAME,
+                        "messages": messages
+                    }
+                    if use_tools:
+                        kwargs["tools"] = TOOLS
+                        kwargs["tool_choice"] = "auto"
+                    
                     # Request completion from local Ollama model
-                    response = await client.chat.completions.create(
-                        model=MODEL_NAME,
-                        messages=messages,
-                        tools=TOOLS,
-                        tool_choice="auto"
-                    )
+                    response = await client.chat.completions.create(**kwargs)
                     
                     response_message = response.choices[0].message
                     

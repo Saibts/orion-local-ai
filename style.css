@@ -112,6 +112,7 @@ main {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    min-height: 0;
 }
 
 .metrics-panel h2 {
@@ -201,6 +202,7 @@ main {
     height: 100%;
     padding: 24px;
     overflow: hidden;
+    min-height: 0;
 }
 
 /* Visualizer (Orb) */
@@ -264,6 +266,7 @@ main {
 /* Comms Chat Logs */
 .comms-log {
     flex: 1;
+    min-height: 0;
     background: rgba(255, 255, 255, 0.01);
     border: var(--panel-border);
     border-radius: 16px;
