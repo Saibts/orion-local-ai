@@ -35,6 +35,42 @@ function logSystemEvent(text, type = "system") {
     sysLogsContainer.scrollTop = sysLogsContainer.scrollHeight;
 }
 
+let isTyping = false;
+let currentTypingTimeout = null;
+
+// Simple Markdown to HTML formatter
+function formatMarkdown(text) {
+    // Escape HTML to prevent injection
+    let html = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+    // Code blocks: ```lang ... ```
+    const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
+    html = html.replace(codeBlockRegex, (match, lang, code) => {
+        return `<pre><code class="language-${lang}">${code.trim()}</code></pre>`;
+    });
+
+    // Inline code: `code`
+    html = html.replace(/`([^`\n]+)`/g, "<code>$1</code>");
+
+    // Bold: **text**
+    html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+
+    // Italic: *text*
+    html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+
+    // Newlines to <br> (but not inside <pre> blocks)
+    const parts = html.split(/(<pre>[\s\S]*?<\/pre>)/g);
+    for (let i = 0; i < parts.length; i++) {
+        if (!parts[i].startsWith("<pre>")) {
+            parts[i] = parts[i].replace(/\n/g, "<br>");
+        }
+    }
+    return parts.join("");
+}
+
 // Render Messages to Chat Log
 function appendMessage(sender, text, isUser = false) {
     const msgDiv = document.createElement("div");
@@ -46,12 +82,53 @@ function appendMessage(sender, text, isUser = false) {
     
     const textP = document.createElement("p");
     textP.className = "text";
-    textP.innerText = text;
+    textP.innerHTML = formatMarkdown(text);
     
     msgDiv.appendChild(senderSpan);
     msgDiv.appendChild(textP);
     commsLog.appendChild(msgDiv);
     commsLog.scrollTop = commsLog.scrollHeight;
+}
+
+// Typing effect to dynamically show SPEAKING state
+function typeMessage(sender, text) {
+    if (currentTypingTimeout) {
+        clearTimeout(currentTypingTimeout);
+    }
+    isTyping = true;
+    updateAIState("SPEAKING");
+
+    const msgDiv = document.createElement("div");
+    msgDiv.className = "message system";
+    
+    const senderSpan = document.createElement("span");
+    senderSpan.className = "sender";
+    senderSpan.innerText = sender.toUpperCase();
+    
+    const textP = document.createElement("p");
+    textP.className = "text";
+    
+    msgDiv.appendChild(senderSpan);
+    msgDiv.appendChild(textP);
+    commsLog.appendChild(msgDiv);
+    commsLog.scrollTop = commsLog.scrollHeight;
+    
+    let index = 0;
+    const speed = 10; // snapper typing speed
+    
+    function type() {
+        if (index < text.length) {
+            index++;
+            textP.innerHTML = formatMarkdown(text.slice(0, index));
+            commsLog.scrollTop = commsLog.scrollHeight;
+            currentTypingTimeout = setTimeout(type, speed);
+        } else {
+            isTyping = false;
+            updateAIState("STANDBY");
+        }
+    }
+    
+    type();
 }
 
 // WebSocket Connection Lifecycle
@@ -71,9 +148,13 @@ function connectWebSocket() {
             const data = JSON.parse(event.data);
             
             if (data.type === "state") {
+                // If we are currently typing out text, ignore the STANDBY state from the backend
+                if (data.state === "STANDBY" && isTyping) {
+                    return;
+                }
                 updateAIState(data.state);
             } else if (data.type === "response") {
-                appendMessage("Orion", data.text, false);
+                typeMessage("Orion", data.text);
             } else if (data.type === "log") {
                 logSystemEvent(data.text, "system");
             } else if (data.type === "error") {
@@ -95,6 +176,10 @@ function connectWebSocket() {
         wsStatusText.innerText = "OFFLINE";
         wsStatusText.style.color = "var(--text-muted)";
         updateAIState("STANDBY");
+        if (currentTypingTimeout) {
+            clearTimeout(currentTypingTimeout);
+        }
+        isTyping = false;
         setTimeout(connectWebSocket, reconnectInterval);
     };
 }
@@ -143,6 +228,12 @@ async function fetchMetrics() {
 function sendMessage() {
     const text = userInput.value.trim();
     if (!text) return;
+    
+    // Stop any ongoing typing animation immediately
+    if (currentTypingTimeout) {
+        clearTimeout(currentTypingTimeout);
+        isTyping = false;
+    }
     
     if (socket && socket.readyState === WebSocket.OPEN) {
         appendMessage("You", text, true);
